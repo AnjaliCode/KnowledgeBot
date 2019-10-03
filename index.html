@@ -1,0 +1,269 @@
+<HTML>
+  <HEAD>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <style>
+      body{
+        padding: 50px 50px;
+      }
+        .form-container {
+          width: 750px;
+          height: 150px;
+          padding: 10px;
+          margin: auto;
+          background-color: #aaa;
+          border-radius: 20px;
+        }
+        .display{
+          width: 750px;
+          margin: auto;
+          height: 300px;
+          padding: 10px;
+          border-radius: 10px;
+          background-color: #aaa;
+          border: 2px ridge #ccc;
+        }
+
+        #chat, #imageInfo{
+          width: 100%;
+          padding: 5px;
+          margin: 5px 0 22px 0;
+          border: none;
+          background: #f1f1f1;
+          resize: none;
+          height: 30px;
+          font-size: 12px;
+        }
+
+        .form-container .btn {
+          background-color: black;
+          color: white;
+          padding: 16px 20px;
+          border-radius: 10px;
+          border: none;
+          cursor: pointer;
+          margin-bottom:10px;
+          opacity: 0.8;
+        }
+
+        #clearChat{
+          height: 25px;
+          width: 100px;
+          font-size: 10px;
+          magin: auto;
+          padding: 0;
+          padding-bottom: 20px;
+        }
+
+      body, div {
+        font-size: 12px;
+      }
+
+      div{
+        margin-top: 5px;
+      }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+  </HEAD>
+
+  <BODY>
+  <h2>Chat:<h2>
+  <div class='display'></div>
+  <hr>
+  <form class="form-container" id='form1'>
+    <input type="text" id='chat' name="chat" size="55" placeholder="Type message.."></input>
+    <input id="form-button" onclick="messageLoad()" class='btn' type='submit' value='Find Info' name='form-button'></input>
+  </form>
+  <br>
+  <form class="form-container" id='form2'>
+    <input type="text" id='imageInfo' name="chat" size="55" placeholder="Find Image.."></input>
+    <button id="form-button-image" onclick="imageLoad()" class='btn' type='submit' value='submit' name='form-button-image'>Find Image</button>
+  </form>
+  <hr>
+  <button id="clearChat" onclick="$('.display').empty()">Clear Chat window</button><br><hr>
+  <img id="image" src="" height="100" width="100"/>
+
+  <div id="myCarousal" class="carousel slide" data-ride="carousel">
+      <ol class="carousel-indicators">
+          <li data-target="#myCarousal" data-slide-to="0" class="active"></li>
+          <li data-target="#myCarousal" data-slide-to="1"></li>
+          <li data-target="#myCarousal" data-slide-to="2"></li>
+      </ol>
+      <div class="carousel-inner">
+          <div class="carousel-item active">
+              <img id="1" class="d-block w-100" src="http://www.nytimes.com/images/2018/11/07/business/07THEMEPARKS-01/merlin_142462170_0e60d81b-a72b-4d96-aeb7-1c10a204dae0-articleLarge.jpg" alt="First slide" height="300" width="400"/>
+              <div class="carousel-caption d-none d-md-block">
+              </div>
+          </div>
+          <div class="carousel-item">
+              <img id="2" class="d-block w-100" src="https://placeimg.com/1080/500/arch" alt="Second slide" height="300" width="400"/>
+          </div>
+          <div class="carousel-item">
+              <img id="3" class="d-block w-100" src="https://placeimg.com/1080/500/nature" alt="Third slide" height="300" width="400"/>
+          </div>
+          <div class="carousel-item">
+              <img id="4" class="d-block w-100" src="https://placeimg.com/1080/500/arch" alt="fourth slide" height="300" width="400"/>
+          </div>
+          <div class="carousel-item">
+              <img id="5" class="d-block w-100" src="https://placeimg.com/1080/500/nature" alt="fifth slide" height="300" width="400"/>
+          </div>
+      </div>
+      <a class="carousel-control-prev" href="#myCarousal" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#myCarousal" role="button" data-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+      </a>
+  </div>
+
+  <script>
+    $('#image').hide();
+    $('#myCarousal').carousel();
+
+    var socket = io.connect('http://localhost:5000');
+    alert('Welcome!!! I am a BOT');
+
+    function imageLoad(){
+      console.log('activated images');
+      var $imageInfo = $('#imageInfo');
+      $('#form2').submit(function(event){
+        var message = $imageInfo.val();
+        console.log('image message: ', message);
+        if(message.length == 0) return;
+        socket.emit('send message', {msg: message});
+         event.preventDefault();
+         $('.display').append("<br>"+$imageInfo.val()+":&nbsp&nbsp&nbsp");
+         $imageInfo.val('');
+      // Here is the multimedia display:
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          console.log('Inside the ready state function');
+            var obj = JSON.parse(this.responseText);
+            if(obj.response.docs.length == 0) { //
+              socket.emit('send message', {msg: 'images documents do not exist'});
+               $('.display').append('images documents do not exist');
+                return;
+              } //
+          if(obj.response.docs != undefined){ //
+                if(obj.response.docs[0].multimedia == undefined){
+                  socket.emit('send message', {msg: 'multimedia image does not exist'});
+                  $('.display').append('multimedia image does not exist');
+                  return;
+                }
+
+                else if(obj.response.docs[0].multimedia.length > 0){
+                var ans = obj.response.docs[0].multimedia[0];
+                console.log('ans.url: ', "http://www.nytimes.com/" + ans.url);
+                console.log('multimedia exists');
+                var string = JSON.stringify(ans);
+                $('.display').append(string);
+                var urlImage = ('http://www.nytimes.com/').concat(ans.url);
+                console.log('urlImage: ', urlImage);
+                $('#image').attr("src", urlImage);
+                $('#image').show();
+
+                var ans4 = obj.response.docs[0].multimedia[4];
+                var urlImage4 = 'http://www.nytimes.com/'+ ans4.url;
+                console.log('urlImage for 4: ', urlImage4);
+                $('#5').attr("src", urlImage4);
+                var ans1 = obj.response.docs[0].multimedia[0];
+                var urlImage0 = 'http://www.nytimes.com/'+ ans1.url;
+                console.log('urlImage for 0: ', urlImage0);
+                $('#1').attr("src", urlImage0);
+                var ans1 = obj.response.docs[0].multimedia[1];
+                var urlImage1 = 'http://www.nytimes.com/'+ ans1.url;
+                console.log('urlImage for 1: ', urlImage1);
+                $('#2').attr("src", urlImage1);
+                var ans2 = obj.response.docs[0].multimedia[2];
+                var urlImage2 = 'http://www.nytimes.com/'+ ans2.url;
+                console.log('urlImage for 2: ', urlImage2);
+                $('#3').attr("src", urlImage2);
+                var ans3 = obj.response.docs[0].multimedia[3];
+                var urlImage3 = 'http://www.nytimes.com/' + ans3.url;
+                console.log('urlImage for 3: ', urlImage3);
+                $('#4').attr("src", urlImage3);
+
+                }
+              }
+            } // status 200
+          }; // onreadystatechange
+          if(this.readyState == 4 && this.status == 404){ //
+            socket.emit('send message', {msg: 'images documents not found'});
+             $('.display').append('images documents not found');
+              return;
+           } //
+
+        var url = "http://api.nytimes.com/svc/search/v2/articlesearch.json?api-key=b75da00e12d54774a2d362adddcc9bef&q=response.docs.multimedia.url=*" + message + "*";
+        xhttp.open("GET", url, true);
+        xhttp.send();
+
+      }); // form submit
+    } // end of function
+
+
+function messageLoad(){
+  console.log('activated');
+  var $chat = $('#chat');
+  $('#form1').submit(function(event){
+    var message = $chat.val();
+  //  Globalmessage = $chat.val();
+    console.log('message: ', message);
+    if(message.length == 0) return;
+    socket.emit('send message', {msg: message});
+     event.preventDefault();
+     $('.display').append("<br>"+$chat.val()+":&nbsp&nbsp&nbsp");
+     $chat.val('');
+      if(message.slice(0,2) === 'Hi' || message.slice(0,3)==='Hey'){return;}
+        else if(message.slice(0,6) === 'Thanks' || message.slice(0,9) === "Thank you" || message.slice(0,3) === "Bye"){return;}
+        else {
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+          if(this.readyState == 4 && this.status == 404){
+            socket.emit('send message', {msg: 'Documents do not exist'});
+             $('.display').append('Documents do not exist');
+              return;
+          }
+          if (this.readyState == 4 && this.status == 200) {
+          var obj = JSON.parse(this.responseText);
+          console.log('obj.response.docs: ', obj.response.docs);
+          if(obj.response.docs.length == 0) {
+          socket.emit('send message', {msg: 'keyword docs do not exist'});
+          $('.display').append('keyword docs do not exist');
+          return;
+          }
+          if(obj.response.docs != undefined){
+          if(obj.response.docs[0].keywords == undefined){
+            socket.emit('send message', {msg: 'keyword does not exist'});
+             $('.display').append('keyword does not exist');
+            return;
+          }
+          else if(obj.response.docs[0].keywords.length > 0){
+            var ans = obj.response.docs[0].keywords[0];
+            var string = JSON.stringify(ans);
+            $('.display').append(string);
+          }
+        }
+      } //status: 200
+    };// xhttp
+    // to try: var url = "http://api.nytimes.com/svc/search/v2/articlesearch.json?api-key=b75da00e12d54774a2d362adddcc9bef&q=response.docs.keywords.value='United States Politics and Government'";
+    var url = "http://api.nytimes.com/svc/search/v2/articlesearch.json?api-key=b75da00e12d54774a2d362adddcc9bef&q=response.docs.keywords.value="+ message;
+       // value of keyword to try: 'United States Politics and Government'
+       xhttp.open("GET", url, true);
+       xhttp.send();
+    }
+    });
+
+    }
+    socket.on('new message', function(data){
+    socket.emit('send message', {msg: data})
+    $('.display').append(data.msg);
+    });
+
+    </script>
+  </BODY>
+</HTML>
